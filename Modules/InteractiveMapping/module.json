@@ -1,0 +1,14 @@
+{
+    "name": "InteractiveMapping",
+    "alias": "interactivemapping",
+    "description": "",
+    "keywords": [],
+    "version": "1.0.1",
+    "priority": 0,
+    "providers": [
+        "Modules\\InteractiveMapping\\Providers\\InteractiveMappingServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}
