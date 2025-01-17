@@ -4,116 +4,97 @@ namespace Deployer;
 
 require 'recipe/laravel.php';
 
-set('application', 'VCMS Laravel 8 Application'); // The Application Title
-set('repository', '');     // The Repository in use
-set('keep_releases', 4);                                   // Number of releases to keep on hosts
-set('default_timeout', 1200);
 
-add('shared_files', array('.env','public/sitemap.xml'));                       // Shared files between deploys
-add('shared_dirs', array('storage', 'vendor', 'node_modules','Laravel'));      // Shared dirs between deploys
-add('writable_dirs', array('storage', 'vendor', 'node_modules'.'Laravel'));    // Writable dirs by web server
+// Config
+set('application', 'Laravel One Voice CMS Web Application');                          // The Application Title
+set('repository', 'git@abbeysoftware.github.com:Mark-AbbeySoftware/vcms.git');   // SCM Target
+set('keep_releases',
+    2);                                                           // Number of releases to keep on hosts
+set('default_timeout', 1200);                                                      // default ssh timeout
 
-// **********************************************************************************
-// Task Definitions
-// **********************************************************************************
-task('deploy:permissions', function () {
-    $releases = get('releases_list');
-    $stage = null;
-
-    if (input()->hasArgument('stage')) {
-        $stage = input()->getArgument('stage');
-    }
-
-    if ('prod' === $stage) {
-        desc('Deploying Project Production');
-        run("cp {{deploy_path}}/releases/{$releases[0]}/env/.env.prod {{deploy_path}}/releases/{$releases[0]}/.env");
-    }
-})->desc('Set ownership and permissions');
-
-task('reload:php-fpm', function () {
-    $stage = input()->getArgument('stage');
-    if ($stage === 'dev') {
-        run('sudo /usr/sbin/service php7.4-fpm reload');
-    }
-    if ($stage === 'stage') {
-        run('sudo /usr/sbin/service php7.4-fpm reload');
-    }
-    if ($stage === 'prod') {
-        run('sudo /usr/sbin/service php7.4-fpm reload');
-    }
-})->desc('Reloading PHP-FPM');
-
-task('reload:nginx', function () {
-    run('sudo /usr/sbin/service nginx reload');
-})->desc('Reloading Nginx');
-
-task('udpserver:stop', function () {
-    $stage = input()->getArgument('stage');
-    if ($stage === 'prod') {
-        run('sudo systemctl stop digiqrp');
-    }
-})->desc('Reloading DIGIUdp Server');
-
-task('udpserver:start', function () {
-    $stage = input()->getArgument('stage');
-    if ($stage === 'prod') {
-        run('sudo systemctl start digiqrp');
-    }
-})->desc('Starting DIGIUdp Server');
+add('shared_files', ['.env']);                                                             // shared files
+add('shared_dirs', ['storage', 'vendor', 'bootstrap/cache']);              // Shared dirs between deploys
+add('writable_dirs', ['storage', 'vendor', 'bootstrap/cache']);            // Writable dirs by web server
 
 
-task('reload:supervisor', function () {
-    run('sudo /usr/sbin/service supervisor reload');
-})->desc('Reloading Supervisor');
+// Core Tasks
+
+task('npm:install', function () {
+    run("cd {{release_path}} && /usr/bin/npm install");
+})->desc('Running npm install');
+
+task('npm:build', function () {
+    run("cd {{release_path}} && /usr/bin/npm run build");
+})->desc('Running npm build');
 
 task('build', function () {
-    run('cd {{release_path}} && build');
-})->desc('Building Application');
+    cd('{{release_path}}');
+    run('/usr/bin/npm install');
+    run('/usr/bin/npm run build');
+});
 
-task('migrate', function () {
-        invoke('artisan:migrate');
-})->desc('Migrating Database');
+// Hosts
 
-// if deploy to production, then ask to be sure
-task('cache-clean', function () {
-    run('{{bin/php}} {{release_path}}/artisan cache:clear');
-    run('{{bin/php}} {{release_path}}/artisan view:clear');
-    run('{{bin/php}} {{release_path}}/artisan config:clear');
-})->desc('Clearing System Config and Cache');
-
-task('sitemap', function () {
-    run('{{bin/php}} {{release_path}}/artisan sitemap:generate');
-})->desc('Generating Sitemap');
-
-// **********************************************************************************
-// Host Definitions
-// **********************************************************************************
 host('prod')
-    ->hostname('')
-    ->port(702)
-    ->user('deploy')
-    ->identityFile('~/.ssh/id_rsa_pi_deploy')
-    ->set('writable_use_sudo', true)
-    ->set('http_user', 'www-data')
-    ->set('use_relative_symlink', false)
+    ->set('hostname', 'asgard.absdev.net')
+    ->set('remote_user', 'mag')
+    ->set('identityFile', '~/.ssh/id_rsa')
+    ->set('deploy_path', '/var/www/vcms/prod')
+    ->set('writable_use_sudo', false)
+    ->set('use_relative_symlink', true)
+    ->set('http_user', 'mag')
     ->set('branch', 'main')
-    ->set('composer_options', '{{composer_action}} --verbose --no-dev --prefer-dist --no-interaction')
-    ->set('deploy_path', '/var/www/vcms')
     ->set('ssh_multiplexing', true)
-    ->set('git_tty', false)                         // [Optional] Allocate tty for git clone. Default value is false.
-    ->set('ssh_type', 'native');                    // How we communicate with the host system
+    ->set('git_tty', false)
+    ->set('ssh_type', 'native');
 
-// **********************************************************************************
-// Rules & Actions
-// **********************************************************************************
+host('stage')
+    ->set('hostname', 'asgard.absdev.net')
+    ->set('remote_user', 'mag')
+    ->set('identityFile', '~/.ssh/id_rsa')
+    ->set('deploy_path', '/var/www/vcms/stage')
+    ->set('writable_use_sudo', false)
+    ->set('use_relative_symlink', true)
+    ->set('http_user', 'mag')
+    ->set('branch', 'stage')
+    ->set('ssh_multiplexing', true)
+    ->set('git_tty', false)
+    ->set('ssh_type', 'native');
 
-after('deploy:prepare', 'udpserver:stop');
-after('success', 'deploy:permissions');
+host('develop')
+    ->set('hostname', 'asgard.absdev.net')
+    ->set('remote_user', 'mag')
+    ->set('identityFile', '~/.ssh/id_rsa')
+    ->set('deploy_path', '/var/www/vcms/dev')
+    ->set('writable_use_sudo', false)
+    ->set('use_relative_symlink', true)
+    ->set('http_user', 'mag')
+    ->set('branch', 'stage')
+    ->set('ssh_multiplexing', true)
+    ->set('git_tty', false)
+    ->set('ssh_type', 'native');
+
+host('docs')
+    ->set('hostname', 'asgard.absdev.net')
+    ->set('remote_user', 'mag')
+    ->set('identityFile', '~/.ssh/id_rsa')
+    ->set('deploy_path', '/var/www/vcms/docs')
+    ->set('writable_use_sudo', false)
+    ->set('use_relative_symlink', true)
+    ->set('http_user', 'mag')
+    ->set('branch', 'docs')
+    ->set('ssh_multiplexing', true)
+    ->set('git_tty', false)
+    ->set('ssh_type', 'native');
+
+
+// Hooks
+
+
+after('deploy:update_code', 'build');
+after('deploy:success', 'artisan:config:clear');
+after('deploy:success', 'artisan:route:clear');
+after('deploy:success', 'artisan:cache:clear');
+
 after('deploy:failed', 'deploy:unlock');
-after('deploy:permissions', 'migrate');
-after('deploy', 'cache-clean');
-after('deploy', 'reload:php-fpm');
-after('deploy', 'reload:nginx');
-after('deploy', 'reload:supervisor');
-after('deploy', 'udpserver:start');
-after('deploy', 'sitemap');
+
