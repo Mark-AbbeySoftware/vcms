@@ -69,7 +69,7 @@ host('develop')
     ->set('writable_use_sudo', false)
     ->set('use_relative_symlink', true)
     ->set('http_user', 'mag')
-    ->set('branch', 'stage')
+    ->set('branch', 'develop')
     ->set('ssh_multiplexing', true)
     ->set('git_tty', false)
     ->set('ssh_type', 'native');
