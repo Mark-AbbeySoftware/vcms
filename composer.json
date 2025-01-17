@@ -51,7 +51,7 @@
         "spatie/laravel-sitemap": "^5.9",
         "symfony/yaml": "^5.1",
         "tightenco/ziggy": "^0.9.4",
-        "predis/predis": "^2.3",
+        "predis/predis": "*",
         "typicms/nestablecollection": "^1.1",
         "venturecraft/revisionable": "^1.35",
         "yajra/laravel-datatables-oracle": "~9.0"
