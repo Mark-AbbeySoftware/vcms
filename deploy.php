@@ -36,7 +36,7 @@ task('build', function () {
 // Hosts
 
 host('prod')
-    ->set('hostname', 'asgard.absdev.net')
+    ->set('hostname', 'vcms.absdev.net')
     ->set('remote_user', 'mag')
     ->set('identityFile', '~/.ssh/id_rsa')
     ->set('deploy_path', '/var/www/vcms/prod')
@@ -49,7 +49,7 @@ host('prod')
     ->set('ssh_type', 'native');
 
 host('stage')
-    ->set('hostname', 'asgard.absdev.net')
+    ->set('hostname', 'vcms.absdev.net')
     ->set('remote_user', 'mag')
     ->set('identityFile', '~/.ssh/id_rsa')
     ->set('deploy_path', '/var/www/vcms/stage')
@@ -62,7 +62,7 @@ host('stage')
     ->set('ssh_type', 'native');
 
 host('develop')
-    ->set('hostname', 'asgard.absdev.net')
+    ->set('hostname', 'vcms.absdev.net')
     ->set('remote_user', 'mag')
     ->set('identityFile', '~/.ssh/id_rsa')
     ->set('deploy_path', '/var/www/vcms/dev')
@@ -75,7 +75,7 @@ host('develop')
     ->set('ssh_type', 'native');
 
 host('docs')
-    ->set('hostname', 'asgard.absdev.net')
+    ->set('hostname', 'vcms.absdev.net')
     ->set('remote_user', 'mag')
     ->set('identityFile', '~/.ssh/id_rsa')
     ->set('deploy_path', '/var/www/vcms/docs')
