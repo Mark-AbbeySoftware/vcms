@@ -16,3 +16,4 @@ yarn.lock
 /public/sitemap.xml
 /storage/backups/
 /storage/sqlite/
+composer.lock
