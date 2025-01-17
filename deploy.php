@@ -28,9 +28,9 @@ task('npm:build', function () {
 })->desc('Running npm build');
 
 task('build', function () {
-    cd('{{release_path}}');
-    run('/usr/bin/npm install');
-    run('/usr/bin/npm run build');
+    #cd('{{release_path}}');
+    #run('/usr/bin/npm install');
+    #run('/usr/bin/npm run build');
 });
 
 // Hosts
